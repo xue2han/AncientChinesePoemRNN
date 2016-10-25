@@ -1,0 +1,5 @@
+*.ipynb*
+__pycache__
+save
+data/data.npy
+data/vocab.pkl

@@ -1,3 +1,5 @@
+#-*- coding:utf-8 -*-
+
 import codecs
 import os
 import collections
@@ -7,7 +9,7 @@ import numpy as np
 BEGIN_CHAR = '^'
 END_CHAR = '$'
 UNKNOWN_CHAR = '*'
-
+MAX_LENGTH = 100
 
 class TextLoader():
 
@@ -32,8 +34,16 @@ class TextLoader():
         self.reset_batch_pointer()
 
     def preprocess(self, input_file, vocab_file, tensor_file):
+        def handle_poem(line):
+            line = line.replace(' ','')
+            if len(line) >= MAX_LENGTH:
+                index_end = line.rfind(u'。',0,MAX_LENGTH)
+                index_end = index_end if index_end > 0 else MAX_LENGTH
+                line = line[:index_end+1]
+            return BEGIN_CHAR+line+END_CHAR
+
         with codecs.open(input_file, "r", encoding=self.encoding) as f:
-            lines = list(map(lambda line: BEGIN_CHAR+(line.replace(' ',''))+END_CHAR,f.read().strip().split('\n')))
+            lines = list(map(handle_poem,f.read().strip().split('\n')))
 
         counter = collections.Counter(reduce(lambda data,line: line+data,lines,''))
         count_pairs = sorted(counter.items(), key=lambda x: -x[1])

@@ -1,7 +1,7 @@
 # AncientChinesePoemRNN
 
 参照[char-rnn-tensorflow](https://github.com/sherjilozair/char-rnn-tensorflow)，使用RNN的字符模型，学习并生成古诗。
-数据来自于http://www16.zzu.edu.cn/qts/，总共4万多首唐诗。
+数据来自于http://www16.zzu.edu.cn/qts/ ,总共4万多首唐诗。
 
 ## 准备环境
 

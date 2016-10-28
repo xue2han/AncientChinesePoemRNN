@@ -1,3 +1,5 @@
+#-*- coding:utf-8 -*-
+
 import tensorflow as tf
 from tensorflow.python.ops import rnn_cell
 from tensorflow.python.ops import seq2seq
@@ -52,7 +54,7 @@ class Model():
         optimizer = tf.train.AdamOptimizer(self.lr)
         self.train_op = optimizer.apply_gradients(zip(grads, tvars))
 
-    def sample(self, sess, chars, vocab, prime='', sampling_type=1):
+    def sample(self, sess, chars, vocab, prime=u'', sampling_type=1):
 
         def pick_char(weights):
             if sampling_type == 0:
@@ -62,17 +64,37 @@ class Model():
                 s = np.sum(weights)
                 sample = int(np.searchsorted(t, np.random.rand(1)*s))
             return chars[sample]
+        for char in prime:
+            if char not in vocab:
+                return u"{} is not in charset!".format(char)
 
-        state = self.cell.zero_state(1, tf.float32).eval()
-        result = prime
-        prime = '^' + prime
-        x = np.array([list(map(vocab.get,prime))])
-        [probs,state] = sess.run([self.probs,self.final_state],{self.input_data: x,self.initial_state: state})
-        char = pick_char(probs[-1])
-        while char != '$':
-            result += char
-            x = np.zeros((1,1))
-            x[0,0] = vocab[char]
+        if not prime:
+            state = self.cell.zero_state(1, tf.float32).eval()
+            prime = u'^'
+            result = u''
+            x = np.array([list(map(vocab.get,prime))])
             [probs,state] = sess.run([self.probs,self.final_state],{self.input_data: x,self.initial_state: state})
             char = pick_char(probs[-1])
-        return result
+            while char != u'$':
+                result += char
+                x = np.zeros((1,1))
+                x[0,0] = vocab[char]
+                [probs,state] = sess.run([self.probs,self.final_state],{self.input_data: x,self.initial_state: state})
+                char = pick_char(probs[-1])
+            return result
+        else:
+            result = u'^'
+            for prime_char in prime:
+                result += prime_char
+                x = np.array([list(map(vocab.get,result))])
+                state = self.cell.zero_state(1, tf.float32).eval()
+                [probs,state] = sess.run([self.probs,self.final_state],{self.input_data: x,self.initial_state: state})
+                char = pick_char(probs[-1])
+                while char != u'，' and char != u'。':
+                    result += char
+                    x = np.zeros((1,1))
+                    x[0,0] = vocab[char]
+                    [probs,state] = sess.run([self.probs,self.final_state],{self.input_data: x,self.initial_state: state})
+                    char = pick_char(probs[-1])
+                result += char
+            return result[1:]

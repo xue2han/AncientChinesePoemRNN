@@ -1,8 +1,8 @@
 #-*- coding:utf-8 -*-
 
 import tensorflow as tf
-from tensorflow.python.ops import rnn_cell
-from tensorflow.python.ops import seq2seq
+from tensorflow.contrib import rnn
+from tensorflow.contrib import legacy_seq2seq
 import numpy as np
 
 class Model():
@@ -12,17 +12,17 @@ class Model():
             args.batch_size = 1
 
         if args.model == 'rnn':
-            cell_fn = rnn_cell.BasicRNNCell
+            cell_fn = rnn.BasicRNNCell
         elif args.model == 'gru':
-            cell_fn = rnn_cell.GRUCell
+            cell_fn = rnn.GRUCell
         elif args.model == 'lstm':
-            cell_fn = rnn_cell.BasicLSTMCell
+            cell_fn = rnn.BasicLSTMCell
         else:
             raise Exception("model type not supported: {}".format(args.model))
 
         cell = cell_fn(args.rnn_size,state_is_tuple=False)
 
-        self.cell = cell = rnn_cell.MultiRNNCell([cell] * args.num_layers,state_is_tuple=False)
+        self.cell = cell = rnn.MultiRNNCell([cell] * args.num_layers,state_is_tuple=False)
 
         self.input_data = tf.placeholder(tf.int32, [args.batch_size, None])
         # the length of input sequence is variable.
@@ -41,7 +41,7 @@ class Model():
         self.logits = tf.matmul(output, softmax_w) + softmax_b
         self.probs = tf.nn.softmax(self.logits)
         targets = tf.reshape(self.targets, [-1])
-        loss = seq2seq.sequence_loss_by_example([self.logits],
+        loss = legacy_seq2seq.sequence_loss_by_example([self.logits],
                 [targets],
                 [tf.ones_like(targets,dtype=tf.float32)],
                 args.vocab_size)

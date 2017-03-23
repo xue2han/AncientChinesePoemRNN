@@ -5,7 +5,7 @@
 
 ## 准备环境
 
-* tensorflow 0.11
+* tensorflow 1.0
 * python2
 
 ## 训练
